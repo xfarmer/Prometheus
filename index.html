@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <meta name="description" content="Prometheus - Recognition and definition.">
+    <meta name="author" content="github.com/xfarmer">
+
+    <link rel="icon" href="prometheus.ico">
+    <title>Prometheus</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="css/prometheus.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="js/jquery/3.2.1/jquery.min.js"></script>
+    <script src="js/highstock.js"></script>
+    <script src="js/prometheus.js"></script>
+</head>
+
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Prometheus</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <form class="navbar-form navbar-right">
+                <div class="form-group">
+                    <input type="text" placeholder="Email" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="Password" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-success">Sign in</button>
+            </form>
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>
+
+<div class="jumbotron">
+    <div class="container">
+        <h1>Hello, welcome to Prometheus!</h1>
+        <p>Prometheus will help you identify data and discover value from it.</p>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 30px">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>标注工具</h4>
+        </div>
+        <ul class="list-group" id="markerList">
+            <li class="list-group-item">
+                <a target="_top" class="button" title="游泳真值标注" href="swimming_cleaner.html">游泳真值标注</a>
+            </li>
+            <li class="list-group-item">
+                <a target="_top" class="button" title="游泳范围标注" href="swimming_marker.html">游泳范围标注</a>
+            </li>
+            <li class="list-group-item">
+                <a target="_top" class="button" title="活动数据标注" href="activity_marker.html">活动数据标注</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="panel panel-primary">
+
+        <div class="panel-heading">
+            <h4>清洗工具</h4>
+        </div>
+        <ul class="list-group" id="cleanerList">
+            <li class="list-group-item">
+                <a target="_top" class="button" title="手势数据清洗" href="gesture_cleaner.html">手势数据清洗</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+</body>
+
+<!-- Footer -->
+<footer class="footer navbar navbar-inverse navbar-fixed-bottom">
+    <div class="container">
+        <!-- Copyright -->
+        <div class="footer-copyright text-center" style="color: #ffffff; margin-top: 10px;">Copyright © 2018:
+            <a href="https://github.com/xfarmer"> xfarmer@github</a> All Rights Reserved.
+        </div>
+        <!-- Copyright -->
+    </div>
+
+</footer>
+<!-- Footer -->
+
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+
+</html>

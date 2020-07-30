@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test ArrayList</title>
+
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="../js/prometheus.js"></script>
+</head>
+<body>
+
+<h3>Unit test for ArrayList</h3>
+<h4>Show result at console.</h4>
+
+<script type="text/javascript">
+    $(function () {
+        console.log("UT for ArrayList.");
+        let list = new ArrayList();
+
+        // Test empty
+        console.log(list.isEmpty());
+
+        // Test add
+        list.add("A");
+        list.add("B");
+        list.add("C");
+        list.add("D");
+        console.log(list);
+        console.log(arrToString(list) === "ABCD");
+        printList(list);
+
+        // Test size
+        console.log("Size: " + list.size());
+
+        // Test remove
+        list.remove(1);
+        list.remove(1);
+        console.log(list);
+        console.log(arrToString(list) === "AD");
+        printList(list);
+
+        // Test insert
+        list.insert(1, "B");
+        list.insert(2, "C");
+        console.log(list);
+        console.log(arrToString(list) === "ABCD");
+        printList(list);
+
+        // Test replace
+        list.replace(2, "c");
+        list.replace(3, "d");
+        console.log(list);
+        console.log(arrToString(list) === "ABcd");
+        printList(list);
+
+        // Test indexOf
+        console.log("Index of \"c\": " + list.indexOf("c"));
+        console.log(list);
+        console.log(list.indexOf("c") === 2);
+
+        // Test contains
+        console.log("Contains 'c': " + list.contains("c"));
+
+        // Test clear
+        console.log("Test clear()");
+        list.clear();
+        console.log(list);
+        console.log(list.isEmpty());
+    });
+
+    function arrToString(arr) {
+        let s = "";
+        for (let i = 0; i < arr.size(); i++) {
+            s += arr.get(i);
+        }
+
+        return s;
+    }
+
+    function printList(arr) {
+        console.log("Array: " + arrToString(arr));
+    }
+</script>
+
+</body>
+</html>
