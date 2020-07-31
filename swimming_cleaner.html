@@ -20,6 +20,7 @@
     <script src="js/jquery/3.2.1/jquery.min.js"></script>
     <script src="js/highstock.js"></script>
     <script src="js/toastr.min.js"></script>
+    <script src="js/prometheus.js"></script>
     <script src="js/swimming_cleaner.js"></script>
 </head>
 
@@ -51,6 +52,25 @@
     </div>
 
     <hr>
+
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label for="dataAxisSelector" class="col-sm-1 control-label">Data Axis</label>
+            <div class="col-sm-1">
+                <select class="form-control" id="dataAxisSelector">
+                    <option value="0">ax</option>
+                    <option value="1">ay</option>
+                    <option value="2">az</option>
+                    <option value="3">wx</option>
+                    <option value="4">wy</option>
+                    <option value="5">wz</option>
+                    <option value="6">mx</option>
+                    <option value="7">my</option>
+                    <option value="8">mz</option>
+                </select>
+            </div>
+        </div>
+    </form>
 
     <div id="markingChart" style="height: 450px; min-width: 300px"></div>
     <div id="navigatorChart" style="height: 200px; min-width: 300px"></div>
@@ -158,7 +178,7 @@
     </div>
 
 </footer>
-<!-- Footer -->
+<Footer -->
 
 <script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
 

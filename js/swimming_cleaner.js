@@ -193,7 +193,6 @@ let markedFlags;
 let markingIndex = 0;
 let swimLabelResults = new SwimLabelResultList();
 let currentSwimLabelResult = null;
-let navigatorChart = null;
 let markingChart = null;
 let guessedStyle = 0;
 let guessedPoolLen = 0;
@@ -201,144 +200,7 @@ let guessedTrips = 0;
 let guessedStrokes = 0;
 let endPointMax = 0;
 let sampleRate = 26;
-
-let markingChartOptions = {
-    credits: {
-        text: 'xfarmer',
-        href: 'https://github.com/xfarmer'
-    },
-    title: {
-        text: 'Swimming Accelerometer Magnitude'
-    },
-    xAxis: {
-        title: {
-            text: 'Time(s)'
-        },
-        type: 'linear',
-        tickInterval: sampleRate, // 坐标轴刻度间隔为采样周期
-        tickWidth: 0,
-        gridLineWidth: 1,
-        labels: {
-            align: 'left',
-            x: 3,
-            y: -3,
-            formatter: function () {
-                return this.value / sampleRate;
-            },
-        }
-    },
-
-    yAxis: {
-        title: {
-            text: 'Magnitude(g)'
-        }
-    },
-
-    plotOptions: {
-        series: {
-            allowPointSelect: true
-        },
-        line: {
-            dataLabels: {
-                enabled: false
-            },
-            enableMouseTracking: true
-        },
-    },
-
-    series: [{
-        tooltip: {
-            valueDecimals: 2
-        },
-        name: 'Magnitude',
-        showInLegend: false,
-        data: []
-    }],
-
-    chart: {
-        selectionMarkerFill: 'rgba(0,191,255,0.2)',
-        zoomType: 'x',
-        panning: true,
-        panKey: 'shift',
-        events: {
-            click: function (event) {
-                this.xAxis[0].removePlotBand('marked-band');
-            },
-            selection: function (event) {
-                let min = Math.round(event.xAxis[0].min);
-                if (min < 0) min = 0;
-                let max = Math.round(event.xAxis[0].max);
-                if (max > endPointMax) max = endPointMax;
-                // alert('You selected points from: ' + min + ' to ' + max);
-                this.xAxis[0].removePlotBand('marked-band');
-                this.xAxis[0].addPlotBand({
-                    from: min,
-                    to: max,
-                    color: '#FCFFC5',
-                    id: 'marked-band'
-                });
-
-                return false;
-            }
-        }
-    }
-};
-
-let navigatorChartOptions = {
-    credits: {
-        text: 'xfarmer',
-        href: 'https://github.com/xfarmer'
-    },
-    title: {
-        text: 'Navigator'
-    },
-    xAxis: {
-        title: {
-            text: 'Time(s)'
-        },
-        tickInterval: sampleRate,
-        tickWidth: 0,
-        gridLineWidth: 1,
-        labels: {
-            align: 'left',
-            x: 3,
-            y: -3,
-            formatter: function () {
-                return this.value / sampleRate;
-            },
-        }
-    },
-
-    yAxis: {
-        title: {
-            text: 'Magnitude(g)'
-        }
-    },
-
-    series: [{
-        tooltip: {
-            valueDecimals: 2
-        },
-        name: 'Magnitude',
-        showInLegend: false,
-        data: []
-    }],
-
-    chart: {
-        selectionMarkerFill: 'rgba(0,191,255,0.2)',
-        zoomType: 'x',
-        panning: true,
-        panKey: 'shift',
-        events: {
-            selection: function (event) {
-                let min = Math.round(event.xAxis[0].min);
-                let max = Math.round(event.xAxis[0].max);
-                markingChart.xAxis[0].setExtremes(min, max);
-                return false;
-            }
-        }
-    }
-};
+let dataAxis = 4;  // gyro y
 
 function handleFileSelection(evt) {
     files = evt.target.files;  // FileList object
@@ -460,24 +322,17 @@ function markFile(f) {
                 rawData.push(wy);
             }
 
-            if (navigatorChart === null) {
-                console.log('Init navigator chart.');
-                navigatorChartOptions.series[0].data = rawData;
-                navigatorChart = Highcharts.chart('navigatorChart', navigatorChartOptions);
+            if (markingChart === null) {
+                console.log('Init marking chart');
+                markingChart = new MarkingChart('markingChart', 'navigatorChart');
+                markingChart.setData(rawData);
+
+                $('#markingChart').show();
                 $('#navigatorChart').show();
             } else {
-                // console.log('Update navigator chart.');
-                navigatorChart.series[0].setData(rawData, true);
-            }
-            if (markingChart === null) {
-                console.log('Init marking chart.');
-                markingChartOptions.series[0].data = rawData;
-                markingChart = Highcharts.chart('markingChart', markingChartOptions);
-                $('#markingChart').show();
-            } else {
-                // console.log('Update marking chart.');
-                markingChart.xAxis[0].removePlotBand('marked-band');
-                markingChart.series[0].setData(rawData, true);
+                console.log('Update marking chart.');
+                // markingChart.xAxis[0].removePlotBand('marked-band');
+                markingChart.setData(rawData);
             }
 
             // Set default label
