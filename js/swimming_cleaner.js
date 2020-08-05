@@ -316,8 +316,6 @@ function markFile(f) {
 
     let reader = new SensorDataLoader(false, 10, function (data) {
         allData = data;
-        console.log(data.length)
-        console.log(data[0].length)
 
         if (markingChart === null) {
             console.log('Init marking chart');
