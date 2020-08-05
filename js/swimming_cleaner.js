@@ -195,12 +195,13 @@ let swimLabelResults = new SwimLabelResultList();
 let currentSwimLabelResult = null;
 let markingChart = null;
 let guessedStyle = 0;
-let guessedPoolLen = 0;
-let guessedTrips = 0;
-let guessedStrokes = 0;
+let guessedPoolLen = -1;
+let guessedTrips = 2;
+let guessedStrokes = -1;
 let endPointMax = 0;
 let sampleRate = 26;
-let dataAxis = 4;  // gyro y
+let allData = null;
+let dataAxis = 5;  // gyro y
 
 function handleFileSelection(evt) {
     files = evt.target.files;  // FileList object
@@ -221,6 +222,7 @@ function handleFileSelection(evt) {
     $('#labelResultRow').show();
     $('#markSubmit').show();
     $('#markInvalid').show();
+    $('#dataAxisSelector').val(dataAxis);
 
     markingIndex = 0;
     markFile(files[markingIndex]);
@@ -286,68 +288,69 @@ function markFile(f) {
         restoreMarkedFile(currentSwimLabelResult);
     }
 
-    let rawDataLines = [];
-    let rawData = [];
+    let metas = f.name.split('_');
+    if (metas[0] === 'SensorData') {
+        guessedPoolLen = parseInt(metas[6]);
+        guessedStyle = stateTable[metas[7]];
+        guessedTrips = parseInt(metas[8]);
+        guessedStrokes = parseInt(metas[9]);
 
-    let reader = new FileReader();
-    // Closure to capture the file information.
-    reader.onload = (function () {
-        return function (e) {
-            let metas = f.name.split('_');
-            if (metas[0] === 'SensorData') {
-                guessedPoolLen = parseInt(metas[6]);
-                guessedStyle = stateTable[metas[7]];
-                guessedTrips = parseInt(metas[8]);
-                guessedStrokes = parseInt(metas[9]);
+    } else {
+        guessedPoolLen = -1;
+        guessedStrokes = -1;
+        guessedTrips = 2;
+        guessedStyle = 0;
+        if (f.name.includes('自由')) {
+            guessedStyle = 1;
+        } else if (f.name.includes('蛙')) {
+            guessedStyle = 2;
+        } else if (f.name.includes('仰')) {
+            guessedStyle = 3;
+        } else if (f.name.includes('蝶')) {
+            guessedStyle = 4;
+        }
+        console.log('This swimming style maybe: ' + guessedStyle)
+        console.log('Not a standard SensorData file?');
+        toastr.warning('文件不以"SensorData"开头，可能不是标准的数据文件？')
+    }
 
-            } else {
-                guessedStyle = 0;
-                console.log('Not a standard SensorData file?');
-                alert('文件不以"SensorData"开头，可能不是标准的数据文件？')
-            }
+    let reader = new SensorDataLoader(false, 10, function (data) {
+        allData = data;
+        console.log(data.length)
+        console.log(data[0].length)
 
-            // console.log('guessedState: ' + guessedState);
-            let content = e.target.result;
-            // document.getElementById('content').innerHTML = '<p>' + replaceAll(content, '\n','<br>') + '</p>';
-            rawDataLines = content.split('\n');
-            rawData.length = 0;
-            for (let j = 0, line; line = rawDataLines[j]; j++) {
-                let vArr = line.split(',');
-                let x = parseFloat(vArr[1]);
-                let y = parseFloat(vArr[2]);
-                let z = parseFloat(vArr[3]);
-                let wx = parseFloat(vArr[1]);
-                let wy = parseFloat(vArr[2]);
-                let wz = parseFloat(vArr[3]);
-                rawData.push(wy);
-            }
+        if (markingChart === null) {
+            console.log('Init marking chart');
+            markingChart = new MarkingChart('markingChart', 'navigatorChart');
+            $('#markingChart').show();
+            $('#navigatorChart').show();
 
-            if (markingChart === null) {
-                console.log('Init marking chart');
-                markingChart = new MarkingChart('markingChart', 'navigatorChart');
-                markingChart.setData(rawData);
+            markingChart.setData(allData[dataAxis]);
+        } else {
+            console.log('Update marking chart.');
+            // markingChart.xAxis[0].removePlotBand('marked-band');
+            markingChart.setData(allData[dataAxis]);
+        }
 
-                $('#markingChart').show();
-                $('#navigatorChart').show();
-            } else {
-                console.log('Update marking chart.');
-                // markingChart.xAxis[0].removePlotBand('marked-band');
-                markingChart.setData(rawData);
-            }
+        // Set default label
+        $('#inputPoolLen').val(guessedPoolLen);
+        $('#swimmingStyle').val(guessedStyle);
+        $('#inputTrips').val(guessedTrips);
+        $('#inputStrokes').val(guessedStrokes);
 
-            // Set default label
-            $('#inputPoolLen').val(guessedPoolLen);
-            $('#swimmingStyle').val(guessedStyle);
-            $('#inputTrips').val(guessedTrips);
-            $('#inputStrokes').val(guessedStrokes);
+        // Clear label variables
+        endPointMax = allData[0].length - 1;
+    });
 
-            // Clear label variables
-            endPointMax = rawData.length - 1;
-        };
-    })(f);
+    reader.readFile(f);
+}
 
-    // Read in the image file as a data URL.
-    reader.readAsText(f);
+function onAxisSelected(index) {
+    if (markingChart !== null) {
+        dataAxis = index;
+        console.log('Update marking chart, using data axis: ' + dataAxis);
+        markingChart.setData(allData[dataAxis]);
+    }
 }
 
 function updateLabel(label) {
@@ -361,7 +364,7 @@ function updateLabel(label) {
     saveCurrentLabelResult(false);
 
     if ((markingIndex + 1) < files.length) {
-        toastr.success('开始标注下一条', '提交成功');
+        toastr.success('开始标注下一条: ' + markingIndex + '/' + files.length, '提交成功');
         // Move to next file
         console.log('Move to next file: ' + (markingIndex + 1))
         onFileClicked(markingIndex + 1);

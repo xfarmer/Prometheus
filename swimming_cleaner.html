@@ -57,16 +57,17 @@
         <div class="form-group">
             <label for="dataAxisSelector" class="col-sm-1 control-label">Data Axis</label>
             <div class="col-sm-1">
-                <select class="form-control" id="dataAxisSelector">
-                    <option value="0">ax</option>
-                    <option value="1">ay</option>
-                    <option value="2">az</option>
-                    <option value="3">wx</option>
-                    <option value="4">wy</option>
-                    <option value="5">wz</option>
-                    <option value="6">mx</option>
-                    <option value="7">my</option>
-                    <option value="8">mz</option>
+                <select class="form-control" id="dataAxisSelector" onchange="onAxisSelected(this.value)">
+                    <option value="0">ts</option>
+                    <option value="1">ax</option>
+                    <option value="2">ay</option>
+                    <option value="3">az</option>
+                    <option value="4">wx</option>
+                    <option value="5">wy</option>
+                    <option value="6">wz</option>
+                    <option value="7">mx</option>
+                    <option value="8">my</option>
+                    <option value="9">mz</option>
                 </select>
             </div>
         </div>
@@ -171,7 +172,7 @@
 <footer class="footer navbar navbar-inverse navbar-fixed-bottom">
     <div class="container">
         <!-- Copyright -->
-        <div class="footer-copyright text-center" style="color: #ffffff; margin-top: 10px;">Copyright © 2018:
+        <div class="footer-copyright text-center" style="color: #ffffff; margin-top: 10px;">Copyright © 2018-2020:
             <a href="https://github.com/xfarmer"> xfarmer@github</a> All Rights Reserved.
         </div>
         <!-- Copyright -->
