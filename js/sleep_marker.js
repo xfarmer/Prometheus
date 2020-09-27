@@ -198,146 +198,6 @@ let guessedState = 0;
 let endPointMax = 0;
 let sampleRate = 26;
 
-let markingChartOptions = {
-    credits: {
-        text: 'xfarmer',
-        href: 'https://github.com/xfarmer'
-    },
-    title: {
-        text: 'Swimming Accelerometer Magnitude'
-    },
-    xAxis: {
-        title: {
-            text: 'Time(s)'
-        },
-        type: 'linear',
-        tickInterval: sampleRate, // 坐标轴刻度间隔为采样周期
-        tickWidth: 0,
-        gridLineWidth: 1,
-        labels: {
-            align: 'left',
-            x: 3,
-            y: -3,
-            formatter: function () {
-                return this.value / sampleRate;
-            },
-        }
-    },
-
-    yAxis: {
-        title: {
-            text: 'Magnitude(g)'
-        }
-    },
-
-    plotOptions: {
-        series: {
-            allowPointSelect: true
-        },
-        line: {
-            dataLabels: {
-                enabled: false
-            },
-            enableMouseTracking: true
-        },
-    },
-
-    series: [{
-        tooltip: {
-            valueDecimals: 2
-        },
-        name: 'Magnitude',
-        showInLegend: false,
-        data: []
-    }],
-
-    chart: {
-        selectionMarkerFill: 'rgba(0,191,255,0.2)',
-        zoomType: 'x',
-        panning: true,
-        panKey: 'shift',
-        events: {
-            click: function (event) {
-                this.xAxis[0].removePlotBand('marked-band');
-            },
-            selection: function (event) {
-                let min = Math.round(event.xAxis[0].min);
-                if (min < 0) min = 0;
-                let max = Math.round(event.xAxis[0].max);
-                if (max > endPointMax) max = endPointMax;
-                // alert('You selected points from: ' + min + ' to ' + max);
-                this.xAxis[0].removePlotBand('marked-band');
-                this.xAxis[0].addPlotBand({
-                    from: min,
-                    to: max,
-                    color: '#FCFFC5',
-                    id: 'marked-band'
-                });
-
-                // Show mark modal
-                showMarkModal(min, max, guessedState);
-
-                return false;
-            }
-        }
-    }
-};
-
-let navigatorChartOptions = {
-    credits: {
-        text: 'xfarmer',
-        href: 'https://github.com/xfarmer'
-    },
-    title: {
-        text: 'Navigator'
-    },
-    xAxis: {
-        title: {
-            text: 'Time(s)'
-        },
-        tickInterval: sampleRate,
-        tickWidth: 0,
-        gridLineWidth: 1,
-        labels: {
-            align: 'left',
-            x: 3,
-            y: -3,
-            formatter: function () {
-                return this.value / sampleRate;
-            },
-        }
-    },
-
-    yAxis: {
-        title: {
-            text: 'Magnitude(g)'
-        }
-    },
-
-    series: [{
-        tooltip: {
-            valueDecimals: 2
-        },
-        name: 'Magnitude',
-        showInLegend: false,
-        data: []
-    }],
-
-    chart: {
-        selectionMarkerFill: 'rgba(0,191,255,0.2)',
-        zoomType: 'x',
-        panning: true,
-        panKey: 'shift',
-        events: {
-            selection: function (event) {
-                let min = Math.round(event.xAxis[0].min);
-                let max = Math.round(event.xAxis[0].max);
-                markingChart.xAxis[0].setExtremes(min, max);
-                return false;
-            }
-        }
-    }
-};
 
 function handleFileSelection(evt) {
     files = evt.target.files;  // FileList object
@@ -434,12 +294,11 @@ function markFile(f) {
         return function (e) {
             let metas = f.name.split('_');
             if (metas[0] === 'SensorData') {
-                guessedState = stateTable[metas[7]];
-
+                guessedState = stateTable[metas[6]];
             } else {
                 guessedState = 0;
                 console.log('Not a standard SensorData file?');
-                alert('文件不以"SensorData"开头，可能不是标准的数据文件？')
+                // alert('文件不以"SensorData"开头，可能不是标准的数据文件？')
             }
 
             // console.log('guessedState: ' + guessedState);
@@ -447,32 +306,26 @@ function markFile(f) {
             // document.getElementById('content').innerHTML = '<p>' + replaceAll(content, '\n','<br>') + '</p>';
             rawDataLines = content.split('\n');
             rawData.length = 0;
-            for (let j = 0, line; line = rawDataLines[j]; j++) {
+            // start from line 1
+            for (let j = 1, line; line = rawDataLines[j]; j++) {
                 let vArr = line.split(',');
-                let x = parseFloat(vArr[1]);
-                let y = parseFloat(vArr[2]);
-                let z = parseFloat(vArr[3]);
+                let x = parseFloat(vArr[2]);
+                let y = parseFloat(vArr[3]);
+                let z = parseFloat(vArr[4]);
                 rawData.push(Math.sqrt(x * x + y * y + z * z) / 9.8);
             }
 
-            if (navigatorChart === null) {
-                console.log('Init navigator chart.');
-                navigatorChartOptions.series[0].data = rawData;
-                navigatorChart = Highcharts.chart('navigatorChart', navigatorChartOptions);
-                $('#navigatorChart').show();
-            } else {
-                // console.log('Update navigator chart.');
-                navigatorChart.series[0].setData(rawData, true);
-            }
             if (markingChart === null) {
-                console.log('Init marking chart.');
-                markingChartOptions.series[0].data = rawData;
-                markingChart = Highcharts.chart('markingChart', markingChartOptions);
+                console.log('Init marking chart');
+                markingChart = new MarkingChart('markingChart', 'navigatorChart');
                 $('#markingChart').show();
+                $('#navigatorChart').show();
+
+                markingChart.setData(rawData);
             } else {
-                // console.log('Update marking chart.');
-                markingChart.xAxis[0].removePlotBand('marked-band');
-                markingChart.series[0].setData(rawData, true);
+                console.log('Update marking chart.');
+                // markingChart.xAxis[0].removePlotBand('marked-band');
+                markingChart.setData(rawData);
             }
 
             // Clear label variables

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <meta name="description" content="Prometheus - Recognition and definition.">
+    <meta name="author" content="github.com/xfarmer">
+
+    <link rel="icon" href="prometheus.ico">
+    <title>Sleep marker - Prometheus</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="css/prometheus.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="js/jquery/3.2.1/jquery.min.js"></script>
+    <script src="js/highstock.min.js"></script>
+    <script src="js/prometheus.js"></script>
+    <script src="js/sleep_marker.js"></script>
+</head>
+
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Prometheus</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <form class="navbar-form navbar-right">
+                <div class="form-group">
+                    <input type="text" placeholder="Email" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input type="password" placeholder="Password" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-success">Sign in</button>
+            </form>
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>
+
+<div class="alert alert-success alert-dismissable fade" id="markingInfo">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    指定操作成功提示信息。
+</div>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 30px">
+    <h4>选择文件 -> 开始标注</h4>
+    <h5>注意：显示的数据按行读取，没有检查sensor type。</h5>
+    <input type="file" id="files" name="files[]" size="10" multiple/>
+    <br/>
+    <div class="panel panel-primary">
+        <div class="panel-heading">文件标注列表</div>
+        <div class="list-group" id="fileList">
+            <!--<button type="button" class="list-group-item list-group-item-action">Example</button>-->
+        </div>
+    </div>
+    <h5>标注进度:</h5>
+    <div class="progress" id="markProgress">
+        <div class="progress-bar progress-bar-success" role="progressbar"
+             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+             style="width: 0;">
+            0%
+        </div>
+    </div>
+
+    <hr>
+
+    <div id="markingChart" style="height: 450px; min-width: 300px"></div>
+    <div id="navigatorChart" style="height: 200px; min-width: 300px"></div>
+
+    <hr>
+
+    <div class="panel panel-primary" id="labelResultPanel">
+        <div class="panel-heading" style="text-align: center; font-weight: bold; font-size: 1.5em">Labels result list
+        </div>
+        <div class="panel-body">
+            标记的结果，标记完成后通过下方的按钮导出为csv文件。
+        </div>
+        <table class="table table-hover table-striped table-bordered" id="markTable">
+            <caption>标记状态: 0 - Active activity, 1 - Light activity, 2 - Sleep</caption>
+            <thead>
+            <tr>
+                <!--<th>序号</th>-->
+                <th>标记起点</th>
+                <th>标记终点</th>
+                <th>睡眠状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <button type="button" class="btn btn-success" onclick="generateResult()">生成标注结果</button>
+    <button type="button" class="btn btn-primary" onclick="exportData()">导出</button>
+    <button type="button" class="btn btn-info" onclick="copyData()">复制</button>
+    <br/>
+    <br/>
+    <label for="labelResultsTxt"></label>
+    <textarea class="form-control" readonly="readonly" rows="10" id="labelResultsTxt"></textarea>
+
+    <hr>
+
+    <script type="text/javascript">
+        $(function () {
+            $('#markingChart').hide();
+            $('#navigatorChart').hide();
+            $('#markingInfo').hide();
+        });
+        document.getElementById('files').addEventListener('change', handleFileSelection, false);
+    </script>
+</div> <!-- /container -->
+
+<!-- Mark Modal -->
+<div class="modal fade" id="markModal" tabindex="-1" role="dialog" aria-labelledby="markModalLabel" aria-hidden="true">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="markModalLabel">数据标记</h4>
+
+                </div>
+                <div class="modal-body" style="padding-left: 5%; padding-right: 5%">
+                    <div class="row">
+                        <form class="form-horizontal" role="form">
+                            <!--form-group 输入提示样式： has-success/has-warning/has-error -->
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" for="startPoint">标记起点</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" id="startPoint" type="text" value="100">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" for="endPoint">标记终点</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" id="endPoint" type="text" value="500">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="swimmingState" class="col-sm-2 control-label">睡眠状态</label>
+                                <div class="col-sm-10">
+                                    <select id="swimmingState" class="form-control">
+                                        <option value="0">大活动</option>
+                                        <option value="1">小活动</option>
+                                        <option value="2">睡眠</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="markCancel"
+                            onclick="onLabelCancel()">Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="markSubmit"
+                            onclick="onLabelSubmit();">Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<!-- Footer -->
+<footer class="footer navbar navbar-inverse navbar-fixed-bottom">
+    <div class="container">
+        <!-- Copyright -->
+        <div class="footer-copyright text-center" style="color: #ffffff; margin-top: 10px;">Copyright © 2018:
+            <a href="https://github.com/xfarmer"> xfarmer@github</a> All Rights Reserved.
+        </div>
+        <!-- Copyright -->
+    </div>
+
+</footer>
+<!-- Footer -->
+
+<script src="js/bootstrap/3.3.7/bootstrap.min.js"></script>
+
+</html>
